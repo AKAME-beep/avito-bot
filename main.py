@@ -1,11 +1,10 @@
-
 import time
 import requests
 from bs4 import BeautifulSoup
 
 TOKEN = "8661679728:AAGiOHFWxzzIlSwof9yocKz4cbi_SqqvG2Q"
 CHAT_ID = "1182541467"
-URL = "https://avito.ru"
+URL = "https://allorigins.win" + requests.utils.quote("https://avito.ru")
 INTERVAL = 60
 
 HEADERS = {
@@ -23,11 +22,15 @@ def send_telegram(text):
 
 def parse_avito():
     try:
-        response = requests.get(URL, headers=HEADERS, timeout=10)
+        response = requests.get(URL, headers=HEADERS, timeout=15)
         if response.status_code != 200:
-            print(f"Авито временно недоступен. Код: {response.status_code}")
+            print(f"Зеркало временно недоступно. Код: {response.status_code}")
             return []
-        soup = BeautifulSoup(response.text, "xml")
+        data = response.json()
+        rss_content = data.get("contents", "")
+        if not rss_content:
+            return []
+        soup = BeautifulSoup(rss_content, "xml")
         items = soup.find_all("item")
         listings = []
         for item in items:
@@ -36,12 +39,13 @@ def parse_avito():
             price = item.find("price").text if item.find("price") else "Цена не указана"
             listings.append({"title": title, "link": link, "price": price})
         return listings
-    except:
+    except Exception as e:
+        print(f"Ошибка чтения данных: {e}")
         return []
 
 def main():
     print("Бот успешно запущен на вашем ПК.")
-    send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен на вашем ПК!")
+    send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен через зеркало!")
     old_listings = parse_avito()
     old_links = {item["link"] for item in old_listings}
     while True:
