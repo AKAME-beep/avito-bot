@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 TOKEN = "8661679728:AAGiOHFWxzzIlSwof9yocKz4cbi_SqqvG2Q"
 CHAT_ID = "1182541467"
-URL = "https://allorigins.win" + requests.utils.quote("https://avito.ru")
+URL = "https://yandex.ru" + requests.utils.quote("site:avito.ru коты воители")
 INTERVAL = 60
 
 HEADERS = {
@@ -14,48 +14,40 @@ HEADERS = {
 def send_telegram(text):
     api_url = f"https://tgproxy.today{TOKEN}/sendMessage"
     try:
-        res = requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}, timeout=10)
-        if res.status_code != 200:
-            print(f"Ошибка доставки: {res.status_code} - {res.text}")
-    except Exception as e:
-        print(f"Ошибка сети: {e}")
+        requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}, timeout=10)
+    except:
+        pass
 
-def parse_avito():
+def parse_data():
     try:
         response = requests.get(URL, headers=HEADERS, timeout=15)
         if response.status_code != 200:
-            print(f"Зеркало временно недоступно. Код: {response.status_code}")
             return []
-        data = response.json()
-        rss_content = data.get("contents", "")
-        if not rss_content:
-            return []
-        soup = BeautifulSoup(rss_content, "xml")
-        items = soup.find_all("item")
+        soup = BeautifulSoup(response.text, "html.parser")
+        items = soup.find_all("a")
         listings = []
         for item in items:
-            title = item.find("title").text if item.find("title") else "Без названия"
-            link = item.find("link").text if item.find("link") else ""
-            price = item.find("price").text if item.find("price") else "Цена не указана"
-            listings.append({"title": title, "link": link, "price": price})
+            link = item.get("href", "")
+            title = item.text.strip()
+            if "avito.ru" in link and len(title) > 5:
+                listings.append({"title": title, "link": link, "price": "Смотрите на сайте"})
         return listings
-    except Exception as e:
-        print(f"Ошибка чтения данных: {e}")
+    except:
         return []
 
 def main():
     print("Бот успешно запущен на вашем ПК.")
-    send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен через зеркало!")
-    old_listings = parse_avito()
+    send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен по защищенному каналу!")
+    old_listings = parse_data()
     old_links = {item["link"] for item in old_listings}
     while True:
         time.sleep(INTERVAL)
-        current_listings = parse_avito()
+        current_listings = parse_data()
         if not current_listings:
             continue
         for item in current_listings:
             if item["link"] not in old_links:
-                message = f"🔔 *Новое объявление!*\n\n📌 *{item['title']}*\n💰 Цена: {item['price']}\n🔗 [Открыть на Авито]({item['link']})"
+                message = f"🔔 *Новое объявление!*\n\n📌 *{item['title']}*\n🔗 [Открыть на Авито]({item['link']})"
                 send_telegram(message)
                 old_links.add(item["link"])
 
