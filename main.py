@@ -1,50 +1,32 @@
 import time
 import requests
 from bs4 import BeautifulSoup
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import threading
-import urllib.parse
 
 TOKEN = "8661679728:AAGiOHFWxzzIlSwof9yocKz4cbi_SqqvG2Q"
 CHAT_ID = "1182541467"
-PRODUCT = "коты воители"
-INTERVAL = 60
-
-encoded_product = urllib.parse.quote_plus(PRODUCT)
-URL = f"https://avito.ru{encoded_product}&s=104&rss=1"
+URL = "https://avito.ru"
+INTERVAL = 10
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 13; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-class HealthCheckServer(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/plain")
-        self.end_headers()
-        self.wfile.write(b"OK")
-
-def run_health_server():
-    server = HTTPServer(("0.0.0.0", 10000), HealthCheckServer)
-    server.serve_forever()
-
 def send_telegram(text):
+    api_url = f"https://tgproxy.today{TOKEN}/sendMessage"
     try:
-        api_url = f"https://telegram.org{TOKEN}/sendMessage"
-        requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
-    except:
-        pass
+        res = requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}, timeout=10)
+        if res.status_code != 200:
+            print(f"Ошибка доставки: {res.status_code} - {res.text}")
+    except Exception as e:
+        print(f"Ошибка сети: {e}")
 
 def parse_avito():
     try:
-        response = requests.get(URL, headers=HEADERS, timeout=15)
+        response = requests.get(URL, headers=HEADERS, timeout=10)
         if response.status_code != 200:
+            print(f"Авито временно недоступен. Код: {response.status_code}")
             return []
-        soup = BeautifulSoup(response.text, "html.parser" if "item" not in response.text else "xml")
+        soup = BeautifulSoup(response.text, "xml")
         items = soup.find_all("item")
         listings = []
         for item in items:
@@ -57,8 +39,8 @@ def parse_avito():
         return []
 
 def main():
-    print("Бот успешно запущен в облаке.")
-    send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен в облаке!")
+    print("Бот успешно запущен на вашем ПК.")
+    send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен на вашем ПК!")
     old_listings = parse_avito()
     old_links = {item["link"] for item in old_listings}
     while True:
@@ -73,5 +55,4 @@ def main():
                 old_links.add(item["link"])
 
 if __name__ == "__main__":
-    threading.Thread(target=run_health_server, daemon=True).start()
     main()
