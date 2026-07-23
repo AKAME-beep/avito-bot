@@ -3,11 +3,15 @@ import requests
 from bs4 import BeautifulSoup
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import threading
+import urllib.parse
 
 TOKEN = "8661679728:AAGiOHFWxzzIlSwof9yocKz4cbi_SqqvG2Q"
 CHAT_ID = "1182541467"
-URL = "https://www.avito.ru/all/knigi_i_zhurnaly/knigi-ASgBAgICAUTOAuoK?cd=1&context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6IlJjZUEyeUhNSzY2ZVQ2clIiO33REgGRJgAAAA&q=коты+воители&s=104"
+PRODUCT = "коты воители"
 INTERVAL = 60
+
+encoded_product = urllib.parse.quote_plus(PRODUCT)
+URL = f"https://avito.ru{encoded_product}&s=104&rss=1"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -28,7 +32,7 @@ def send_telegram(text):
     try:
         api_url = f"https://telegram.org{TOKEN}/sendMessage"
         res = requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
-        print(f"Статус отправки: {res.status_code}")
+        print(f"Ответ Telegram: {res.status_code} - {res.text}")
     except Exception as e:
         print(f"Ошибка сети: {e}")
 
@@ -36,6 +40,7 @@ def parse_avito():
     try:
         response = requests.get(URL, headers=HEADERS, timeout=10)
         if response.status_code != 200:
+            print(f"Авито вернул статус: {response.status_code}")
             return []
         soup = BeautifulSoup(response.text, "xml")
         items = soup.find_all("item")
@@ -46,11 +51,12 @@ def parse_avito():
             price = item.find("price").text if item.find("price") else "Цена не указана"
             listings.append({"title": title, "link": link, "price": price})
         return listings
-    except:
+    except Exception as e:
+        print(f"Ошибка парсинга: {e}")
         return []
 
 def main():
-    print("Бот успешно запущен.")
+    print("Бот успешно запущен в облаке.")
     send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен в облаке!")
     old_listings = parse_avito()
     old_links = {item["link"] for item in old_listings}
