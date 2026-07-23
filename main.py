@@ -25,9 +25,9 @@ def run_health_server():
     server.serve_forever()
 
 def send_telegram(text):
-    api_url = f"https://telegram.org{TOKEN}/sendMessage"
     try:
-        res = requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
+        url = f"https://telegram.org{TOKEN}/sendMessage"
+        res = requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
         print(f"Ответ Telegram: {res.status_code} - {res.text}")
     except Exception as e:
         print(f"Ошибка сети: {e}")
