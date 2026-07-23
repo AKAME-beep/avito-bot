@@ -14,7 +14,11 @@ encoded_product = urllib.parse.quote_plus(PRODUCT)
 URL = f"https://avito.ru{encoded_product}&s=104&rss=1"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Linux; Android 13; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
 }
 
 class HealthCheckServer(BaseHTTPRequestHandler):
@@ -31,18 +35,16 @@ def run_health_server():
 def send_telegram(text):
     try:
         api_url = f"https://telegram.org{TOKEN}/sendMessage"
-        res = requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
-        print(f"Ответ Telegram: {res.status_code} - {res.text}")
-    except Exception as e:
-        print(f"Ошибка сети: {e}")
+        requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
+    except:
+        pass
 
 def parse_avito():
     try:
-        response = requests.get(URL, headers=HEADERS, timeout=10)
+        response = requests.get(URL, headers=HEADERS, timeout=15)
         if response.status_code != 200:
-            print(f"Авито вернул статус: {response.status_code}")
             return []
-        soup = BeautifulSoup(response.text, "xml")
+        soup = BeautifulSoup(response.text, "html.parser" if "item" not in response.text else "xml")
         items = soup.find_all("item")
         listings = []
         for item in items:
@@ -51,8 +53,7 @@ def parse_avito():
             price = item.find("price").text if item.find("price") else "Цена не указана"
             listings.append({"title": title, "link": link, "price": price})
         return listings
-    except Exception as e:
-        print(f"Ошибка парсинга: {e}")
+    except:
         return []
 
 def main():
