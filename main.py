@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import threading
 
-TOKEN = "8908369765:AAGeeIFii5OdOrRLqN3josgd9d4usmjRsTg"
+TOKEN = "8661679728:AAGiOHFWxzzIlSwof9yocKz4cbi_SqqvG2Q"
 CHAT_ID = "1182541467"
-URL = "https://avito.ru"
+URL = "https://www.avito.ru/all/knigi_i_zhurnaly/knigi-ASgBAgICAUTOAuoK?cd=1&context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6IlJjZUEyeUhNSzY2ZVQ2clIiO33REgGRJgAAAA&q=коты+воители&s=104"
 INTERVAL = 60
 
 HEADERS = {
