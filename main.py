@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 TOKEN = "8661679728:AAGiOHFWxzzIlSwof9yocKz4cbi_SqqvG2Q"
 CHAT_ID = "1182541467"
 URL = "https://avito.ru"
-INTERVAL = 10
+INTERVAL = 60
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
