@@ -12,11 +12,15 @@ HEADERS = {
 }
 
 def send_telegram(text):
-    api_url = f"https://tgproxy.today{TOKEN}/sendMessage"
+    api_url = f"https://telegram.org{TOKEN}/sendMessage"
     try:
         requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}, timeout=10)
     except:
-        pass
+        try:
+            fallback_url = f"https://b612.me{TOKEN}/sendMessage"
+            requests.post(fallback_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}, timeout=10)
+        except:
+            pass
 
 def parse_data():
     try:
@@ -30,7 +34,7 @@ def parse_data():
             link = item.get("href", "")
             title = item.text.strip()
             if "avito.ru" in link and len(title) > 5:
-                listings.append({"title": title, "link": link, "price": "Смотрите на сайте"})
+                listings.append({"title": title, "link": link})
         return listings
     except:
         return []
