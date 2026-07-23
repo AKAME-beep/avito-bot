@@ -6,11 +6,11 @@ import threading
 
 TOKEN = "8908369765:AAGeeIFii5OdOrRLqN3josgd9d4usmjRsTg"
 CHAT_ID = "1182541467"
-URL = "https://www.avito.ru/all/knigi_i_zhurnaly/knigi-ASgBAgICAUTOAuoK?cd=1&context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6IlJjZUEyeUhNSzY2ZVQ2clIiO33REgGRJgAAAA&q=коты+воители&s=104"
+URL = "https://avito.ru"
 INTERVAL = 60
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
 class HealthCheckServer(BaseHTTPRequestHandler):
@@ -26,9 +26,9 @@ def run_health_server():
 
 def send_telegram(text):
     try:
-        url = f"https://telegram.org{TOKEN}/sendMessage"
-        res = requests.post(url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
-        print(f"Ответ Telegram: {res.status_code} - {res.text}")
+        api_url = f"https://telegram.org{TOKEN}/sendMessage"
+        res = requests.post(api_url, json={"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"})
+        print(f"Статус отправки: {res.status_code}")
     except Exception as e:
         print(f"Ошибка сети: {e}")
 
@@ -50,7 +50,7 @@ def parse_avito():
         return []
 
 def main():
-    print("Бот запущен.")
+    print("Бот успешно запущен.")
     send_telegram("🚀 Робот-мониторинг Котов-Воителей успешно запущен в облаке!")
     old_listings = parse_avito()
     old_links = {item["link"] for item in old_listings}
